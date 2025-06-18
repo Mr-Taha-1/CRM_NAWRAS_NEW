@@ -1,0 +1,66 @@
+{
+  "name": "@makerkit/source",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "build": "nx run-many --target=build --all",
+    "lint": "nx run-many --target=lint --all",
+    "test": "nx run-many --target=test --all",
+    "typecheck": "nx run-many --target=typecheck --all",
+    "release": "nx run-many --target=version --all",
+    "format": "nx format:write --all",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:reset": "supabase db reset",
+    "typegen": "supabase gen types typescript --local > supabase/database.types.ts",
+    "healthcheck": "nx run-many --target=typecheck,lint,test --all"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mr-Taha-1/CRM_NAWRAS_NEW"
+  },
+  "author": {
+    "name": "Makerkit",
+    "url": "https://makerkit.dev"
+  },
+  "pre-commit": [
+    "lint",
+    "typecheck"
+  ],
+  "private": true,
+  "dependencies": {
+    "@remix-run/react": "^2.4.1",
+    "@supabase/supabase-js": "^2.50.0",
+    "@tanstack/react-query": "^5.15.0",
+    "@upstash/qstash": "^2.3.0",
+    "axios": "^1.10.0",
+    "cheerio": "^1.1.0",
+    "dotenv": "^16.5.0",
+    "jsonwebtoken": "^9.0.2",
+    "next": "^14.0.4",
+    "node-fetch": "^2.7.0",
+    "pg": "^8.16.0",
+    "puppeteer": "^24.10.1",
+    "react": "^18.2.0",
+    "react-dom": "18.2.0",
+    "swr": "^2.2.4",
+    "ts-case-convert": "^2.0.6",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@nx/eslint": "19.8.11",
+    "@nx/js": "19.8.11",
+    "@nx/workspace": "19.8.11",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^18.16.9",
+    "@types/pg": "^8.11.10",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "~8.48.0",
+    "eslint-config-prettier": "^9.0.0",
+    "nx": "19.8.11",
+    "prettier": "^2.6.2",
+    "supabase": "^1.200.3",
+    "typescript": "~5.5.2"
+  }
+}
