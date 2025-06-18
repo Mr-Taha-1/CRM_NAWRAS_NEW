@@ -1,0 +1,27 @@
+name: crm-system-production
+services:
+- name: web
+  source_dir: /
+  github:
+    repo: Mr-Taha-1/CRM_NAWRAS_NEW
+    branch: main
+    deploy_on_push: true
+  run_command: cd apps/web && npm start
+  build_command: npm install && cd apps/web && npm run build
+  environment_slug: node-js
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  http_port: 3000
+  envs:
+  - key: NODE_ENV
+    value: production
+    type: GENERAL
+  - key: NEXT_PUBLIC_SUPABASE_URL
+    value: https://brnaalisivcdzhwskur-supabase.co
+    type: GENERAL
+  - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+    value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJybmFhbGlzaXZjZHpod3NrdXIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczMzc2NzI4NCwiZXhwIjoyMDQ5MzQzMjg0fQ.aOhNcF_qJacoKGlzaAOhNcF
+    type: GENERAL
+  - key: SUPABASE_SERVICE_ROLE_KEY
+    value: ENCRYPTED
+    type: SECRET
