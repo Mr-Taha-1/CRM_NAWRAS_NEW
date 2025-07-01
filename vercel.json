@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd crmnew-main && npm run build",
+  "installCommand": "cd crmnew-main && npm install",
+  "framework": "nextjs",
+  "outputDirectory": "crmnew-main/.next"
+} 
