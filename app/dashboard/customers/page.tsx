@@ -288,7 +288,7 @@ const EditCustomerForm: React.FC<{ customer: any; onSubmit: (data: CustomerFormD
     company: customer?.company || "",
     country: customer?.country || "",
     city: customer?.city || "",
-    source: customer?.contact_source || "Website",  // CRITICAL FIX: Map contact_source to source
+    source: customer?.contactsource || "Website",  // CRITICAL FIX: Map contactsource to source
     status: customer?.status || "active",
     notes: customer?.notes || ""
   });
@@ -509,14 +509,14 @@ export default function CustomersPage() {
         phone: formData.phone || null,
         city: formData.city,
         country: formData.country,
-        contact_source: formData.source,  // CRITICAL FIX: Use contact_source instead of source
+        contactsource: formData.source,  // CRITICAL FIX: Use contactsource instead of source
         status: formData.status,
         notes: formData.notes || null,
         user_id: user.id  // Ensure this matches auth.uid() exactly
       }
 
-      // Create new customer - CRITICAL FIX: Pass table name to create function
-      const result = await create(customerData, "customers")
+      // Create new customer - Fixed to match GitHub API (no table parameter needed)
+      const result = await create(customerData)
 
       if (result && typeof result === 'object' && 'error' in result && result.error) {
         console.error("Supabase error:", result.error);
@@ -563,13 +563,13 @@ export default function CustomersPage() {
         phone: formData.phone || null,
         city: formData.city,
         country: formData.country,
-        contact_source: formData.source,  // CRITICAL FIX: Use contact_source instead of source
+        contactsource: formData.source,  // CRITICAL FIX: Use contactsource instead of source
         status: formData.status,
         notes: formData.notes || null
       }
 
-      // CRITICAL FIX: Pass table name to update function
-      const result = await update(selectedCustomer.id, updateData, "customers")
+      // Fixed to match GitHub API (no table parameter needed)
+      const result = await update(selectedCustomer.id, updateData)
 
       if (result) {
         toast({ title: "Success", description: "Customer updated successfully!", variant: "default" });
@@ -593,8 +593,8 @@ export default function CustomersPage() {
     try {
       if (!deletingCustomerId) return;
 
-      // CRITICAL FIX: Pass table name to remove function
-      const result = await remove(deletingCustomerId, "customers");
+      // Fixed to match GitHub API (no table parameter needed)
+      const result = await remove(deletingCustomerId);
 
       if (result) {
         toast({ title: "Success", description: "Customer deleted successfully!", variant: "default" });
@@ -850,7 +850,7 @@ export default function CustomersPage() {
                         {customer.city}, {customer.country}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {getContactSourceInfo(customer.contact_source)?.label || customer.contact_source}
+                        {getContactSourceInfo(customer.contactsource)?.label || customer.contactsource}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${

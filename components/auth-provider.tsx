@@ -2,20 +2,24 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
-import type { AuthError } from "@supabase/supabase-js"
+import type { AuthError, User as SupabaseUser } from "@supabase/supabase-js"
 
-type User = {
-  id: string
-  email: string
+// Extended user type with role information
+interface UserWithRole extends SupabaseUser {
+  role?: string
   full_name?: string
+  department?: string
 }
 
 type AuthContextType = {
-  user: User | null
+  user: UserWithRole | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: AuthError | null }>
   signOut: () => Promise<void>
+  refreshSession: () => Promise<void>
+  isAdmin: () => boolean
+  hasRole: (role: string) => boolean
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -24,36 +28,79 @@ const AuthContext = createContext<AuthContextType>({
   signIn: async () => ({ error: new Error("Not implemented") as AuthError }),
   signUp: async () => ({ error: new Error("Not implemented") as AuthError }),
   signOut: async () => {},
+  refreshSession: async () => {},
+  isAdmin: () => false,
+  hasRole: () => false,
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<UserWithRole | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("🔍 [AUTH DEBUG] Initial session check:", {
-        hasSession: !!session,
-        userId: session?.user?.id,
-        userEmail: session?.user?.email,
-        userMetadata: session?.user?.user_metadata,
-        sessionExpiry: session?.expires_at
-      })
+  // Function to fetch user role from users table
+  const fetchUserRole = async (userId: string): Promise<{ role?: string; full_name?: string; department?: string } | null> => {
+    try {
+      const { data: userProfile, error } = await supabase
+        .from('users')
+        .select('role, full_name, department')
+        .eq('id', userId)
+        .single()
 
-      if (session) {
-        const userData = {
-          id: session.user.id,
-          email: session.user.email!,
-          full_name: session.user.user_metadata.full_name,
-        }
-        console.log("✅ [AUTH DEBUG] Setting user data:", userData)
-        setUser(userData)
-      } else {
-        console.log("❌ [AUTH DEBUG] No session found")
+      if (error) {
+        console.warn('Could not fetch user role:', error.message)
+        return null
       }
-      setLoading(false)
-    })
+
+      return userProfile
+    } catch (error) {
+      console.warn('Error fetching user role:', error)
+      return null
+    }
+  }
+
+  // Function to enhance user with role information
+  const enhanceUserWithRole = async (authUser: SupabaseUser): Promise<UserWithRole> => {
+    const userProfile = await fetchUserRole(authUser.id)
+
+    return {
+      ...authUser,
+      role: userProfile?.role || 'user',
+      full_name: userProfile?.full_name || authUser.user_metadata?.full_name,
+      department: userProfile?.department
+    }
+  }
+
+  useEffect(() => {
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession()
+
+        if (error) {
+          console.error("Error getting session:", error)
+          setLoading(false)
+          return
+        }
+
+        if (session?.user) {
+          console.log("🔍 [AUTH DEBUG] Initial session found:", session.user.email)
+          // Enhance user with role information
+          const enhancedUser = await enhanceUserWithRole(session.user)
+          setUser(enhancedUser)
+        } else {
+          console.log("❌ [AUTH DEBUG] No session found")
+        }
+        setLoading(false)
+      } catch (error) {
+        console.error("Error in getInitialSession:", error)
+        setLoading(false)
+      }
+    }
+
+    getInitialSession()
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -65,14 +112,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         timestamp: new Date().toISOString()
       })
 
-      if (session) {
-        const userData = {
-          id: session.user.id,
-          email: session.user.email!,
-          full_name: session.user.user_metadata.full_name,
-        }
-        console.log("✅ [AUTH DEBUG] Auth change - setting user:", userData)
-        setUser(userData)
+      if (session?.user) {
+        // Enhance user with role information
+        const enhancedUser = await enhanceUserWithRole(session.user)
+        console.log("✅ [AUTH DEBUG] Auth change - setting enhanced user:", {
+          email: enhancedUser.email,
+          role: enhancedUser.role
+        })
+        setUser(enhancedUser)
       } else {
         console.log("❌ [AUTH DEBUG] Auth change - clearing user")
         setUser(null)
@@ -137,17 +184,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const refreshSession = async () => {
+    try {
+      const { error } = await supabase.auth.refreshSession()
+      if (error) {
+        console.error("Error refreshing session:", error)
+      }
+    } catch (error) {
+      console.error("Error in refreshSession:", error)
+    }
+  }
+
+  // Role checking functions
+  const isAdmin = (): boolean => {
+    return user?.role === 'admin'
+  }
+
+  const hasRole = (role: string): boolean => {
+    return user?.role === role
+  }
+
+  const value = {
+    user,
+    loading,
+    signIn,
+    signUp,
+    signOut,
+    refreshSession,
+    isAdmin,
+    hasRole,
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )
 }
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext)
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider")
   }
   return context
-} 
+}
