@@ -69,7 +69,7 @@ interface NavigationGroup {
 }
 
 // Function to get navigation data based on user role
-const getNavigationData = (isAdmin: boolean, isManager: boolean): {
+const getNavigationData = (isAdmin: boolean, isManager: boolean, t: (key: string) => string): {
   navMain: NavigationGroup[]
   navSecondary: NavigationItem[]
 } => {
@@ -176,25 +176,19 @@ const getNavigationData = (isAdmin: boolean, isManager: boolean): {
   // Add admin-specific navigation sections
   if (isAdmin) {
     baseNavigation.push({
-      title: "Administration",
+      title: t("nav.administration"),
       items: [
         {
-          title: "User Management",
-          url: "/dashboard/admin/users",
+          title: t("nav.userManagement"),
+          url: "/dashboard/users",
           icon: User,
           description: "Manage system users",
         },
         {
-          title: "System Reports",
-          url: "/dashboard/admin/reports",
-          icon: BarChart3,
-          description: "System-wide analytics",
-        },
-        {
-          title: "Data Overview",
-          url: "/dashboard/admin/data",
-          icon: Building2,
-          description: "All system data",
+          title: t("nav.settings"),
+          url: "/dashboard/settings",
+          icon: Settings,
+          description: "System settings",
         },
       ],
     })
@@ -252,7 +246,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { isAdmin, hasRole } = useRole()
 
   // Get role-based navigation data
-  const navigationData = getNavigationData(isAdmin(), hasRole('manager'))
+  const navigationData = getNavigationData(isAdmin(), hasRole('manager'), t)
 
   const handleSignOut = async () => {
     try {
@@ -263,11 +257,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }
 
   return (
-    <Sidebar 
-      collapsible="icon" 
+    <Sidebar
       {...props}
       className="border-r-0 shadow-lg overflow-hidden"
-      style={{ 
+      style={{
         background: "linear-gradient(135deg, #0f172a 0%, #1e3a8a 25%, #3730a3 50%, #581c87 75%, #1e1b4b 100%)",
         borderRight: "1px solid rgba(255, 255, 255, 0.1)"
       }}
@@ -431,10 +424,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-bold text-white group-hover:text-white transition-all duration-300">
-                      {user?.email?.split("@")[0] || "User"}
+                      {user?.email || "user@example.com"}
                     </span>
                     <span className="truncate text-xs text-white/70 group-hover:text-white/80 transition-all duration-300">
-                      {user?.email || "user@example.com"}
+                      {user?.role ? t(`roles.${user.role}`) : t("roles.user")}
                     </span>
                   </div>
                   <ChevronUp className="ml-auto size-5 text-white/70 group-hover:text-white group-hover:scale-110 transition-all duration-300" />
@@ -456,10 +449,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-bold text-gray-900">
-                        {user?.email?.split("@")[0] || "User"}
+                        {user?.email || "user@example.com"}
                       </span>
                       <span className="truncate text-xs text-muted-foreground">
-                        {user?.email || "user@example.com"}
+                        {user?.role ? t(`roles.${user.role}`) : t("roles.user")}
                       </span>
                     </div>
                   </div>

@@ -53,6 +53,34 @@ const translations: Translations = {
     en: "Loading...",
     ar: "جاري التحميل..."
   },
+
+  // Navigation
+  "nav.administration": {
+    en: "Administration",
+    ar: "الإدارة"
+  },
+  "nav.settings": {
+    en: "Settings",
+    ar: "الإعدادات"
+  },
+  "nav.userManagement": {
+    en: "User Management",
+    ar: "إدارة المستخدمين"
+  },
+
+  // Roles
+  "roles.administrator": {
+    en: "Administrator",
+    ar: "مدير النظام"
+  },
+  "roles.manager": {
+    en: "Manager",
+    ar: "مدير"
+  },
+  "roles.user": {
+    en: "User",
+    ar: "مستخدم"
+  },
   "Sign Out": {
     en: "Sign Out",
     ar: "تسجيل الخروج"

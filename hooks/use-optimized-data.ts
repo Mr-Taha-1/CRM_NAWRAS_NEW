@@ -127,10 +127,16 @@ export function useOptimizedData<T = any>({
       console.log(`🔍 [DATA DEBUG] Querying Supabase for ${table}`)
       let query = supabase.from(table).select(select)
 
-      // CRITICAL FIX: Add user filtering for authenticated requests
+      // CRITICAL FIX: Add user filtering for authenticated requests (but not for admin users)
       if (user && requiresAuth) {
-        console.log(`🔒 [DATA DEBUG] Adding user filter: user_id = ${user.id}`)
-        query = query.eq("user_id", user.id)
+        // Check if user is admin - admins should see all data
+        const isAdmin = user.role === 'admin'
+        if (!isAdmin) {
+          console.log(`🔒 [DATA DEBUG] Adding user filter: user_id = ${user.id}`)
+          query = query.eq("user_id", user.id)
+        } else {
+          console.log(`👑 [DATA DEBUG] Admin user detected - showing all data for ${table}`)
+        }
       }
 
       // Apply filters
