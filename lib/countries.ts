@@ -2,6 +2,13 @@ export interface Country {
   name: string
   code: string
   flag: string
+  cities?: string[]
+}
+
+export interface ContactSource {
+  value: string
+  label: string
+  icon?: string
 }
 
 export const countries: Country[] = [
@@ -15,6 +22,15 @@ export const countries: Country[] = [
   { name: 'India', code: 'IN', flag: '🇮🇳' },
   { name: 'Australia', code: 'AU', flag: '🇦🇺' },
   { name: 'Canada', code: 'CA', flag: '🇨🇦' }
+]
+
+export const contactSources: ContactSource[] = [
+  { value: "Website", label: "🌐 Website" },
+  { value: "Referral", label: "👥 Referral" },
+  { value: "Cold Call", label: "📞 Cold Call" },
+  { value: "Social Media", label: "📱 Social Media" },
+  { value: "Trade Show", label: "🎪 Trade Show" },
+  { value: "Other", label: "📋 Other" }
 ]
 
 const citiesByCountry: Record<string, string[]> = {
@@ -142,4 +158,28 @@ const citiesByCountry: Record<string, string[]> = {
 
 export function getCitiesForCountry(countryCode: string): string[] {
   return citiesByCountry[countryCode] || []
-} 
+}
+
+// Get all countries for dropdown
+export const getCountries = (): Country[] => {
+  return countries.sort((a, b) => a.name.localeCompare(b.name))
+}
+
+// Get country by code
+export const getCountryByCode = (code: string): Country | undefined => {
+  return countries.find(c => c.code === code)
+}
+
+// Get contact sources
+export const getContactSources = (): ContactSource[] => {
+  return contactSources
+}
+
+// Search countries by name
+export const searchCountries = (query: string): Country[] => {
+  const lowerQuery = query.toLowerCase()
+  return countries.filter(country =>
+    country.name.toLowerCase().includes(lowerQuery) ||
+    country.code.toLowerCase().includes(lowerQuery)
+  ).sort((a, b) => a.name.localeCompare(b.name))
+}
